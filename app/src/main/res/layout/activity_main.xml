@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/main_MTV_name"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_margin="16dp"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/main_MB_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/main_MTV_name"
+        android:text="@string/play"
+        android:layout_margin="16dp"
+        />
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/main_MB_pause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/main_MB_play"
+        android:text="@string/pause"
+        android:layout_margin="16dp"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/main_MB_resume"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/main_MB_pause"
+        android:text="@string/resume"
+        android:layout_margin="16dp"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/main_MB_stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/main_MB_resume"
+        android:text="@string/stop"
+        android:layout_margin="16dp"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/main_MB_next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/main_MB_stop"
+        android:text="@string/next"
+        android:layout_margin="16dp"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/main_MB_previous"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/main_MB_next"
+        android:text="@string/previous"
+        android:layout_margin="16dp"
+        />
+
+</RelativeLayout>
