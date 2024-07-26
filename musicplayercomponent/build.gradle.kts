@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.musicplayer"
+    namespace = "com.example.musicplayercomponent"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.musicplayer"
+        applicationId = "com.example.musicplayercomponent"
         minSdk = 28
         targetSdk = 34
         versionCode = 1
@@ -35,14 +35,7 @@ dependencies {
 
     implementation(libs.appcompat)
     implementation(libs.material)
-    implementation(libs.activity)
-    implementation(libs.constraintlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
-    implementation(libs.core)
-    implementation(libs.input)
-
-    implementation(project(":musicplayercomponent"))
 }

@@ -8,11 +8,11 @@
     tools:context=".activities.MainActivity">
 
 
-    <com.example.musicplayer.components.MusicPlayerComponent.MusicPlayerComponent
+    <com.example.musicplayercomponent.MusicPlayerComponent.MusicPlayerComponent
         android:layout_width="match_parent"
         android:layout_height="140dp"
-        android:layout_margin="16dp"
         android:id="@+id/main_MPC_music_player"
+        android:layout_alignParentBottom="true"
         />
 
 </RelativeLayout>
