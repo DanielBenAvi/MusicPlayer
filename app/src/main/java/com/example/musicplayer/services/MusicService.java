@@ -1,4 +1,4 @@
-package com.example.musicplayer;
+package com.example.musicplayer.services;
 
 import android.app.Service;
 import android.content.Intent;
@@ -15,7 +15,6 @@ import androidx.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class MusicService extends Service {
     public static final String TAG = "DDD-MusicServer";

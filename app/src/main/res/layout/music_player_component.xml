@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/mpc_TV_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Title"
+        android:gravity="center"
+        android:textSize="32sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/mpc_IB_previous"
+            android:contentDescription="Previous Song"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:src="@drawable/rewind"
+            android:background="@android:color/transparent"
+            android:scaleType="fitCenter"
+            android:layout_gravity="center"
+            android:layout_margin="5dp" />
+
+        <ImageButton
+            android:id="@+id/mpc_IB_play_pause"
+            android:contentDescription="Play/Pause"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:src="@drawable/play_pause"
+            android:background="@android:color/transparent"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:layout_margin="5dp" />
+
+        <ImageButton
+            android:id="@+id/mpc_IB_next"
+            android:contentDescription="Next Song"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:layout_height="match_parent"
+            android:src="@drawable/forward"
+            android:background="@android:color/transparent"
+            android:layout_gravity="center"
+            android:layout_margin="5dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

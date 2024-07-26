@@ -1,4 +1,4 @@
-package com.example.musicplayer;
+package com.example.musicplayer.activities;
 
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -8,6 +8,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.musicplayer.components.MusicPlayerComponent;
+import com.example.musicplayer.services.MusicService;
+import com.example.musicplayer.permissions.PermissionManager;
+import com.example.musicplayer.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
@@ -22,7 +26,9 @@ public class MainActivity extends AppCompatActivity{
     private MaterialButton main_MB_pause;
     private MaterialButton main_MB_resume;
 
-    private MaterialTextView main_MTV_name;
+    private MusicPlayerComponent main_MPC_music_player;
+
+
 
     private PermissionManager permissionManager;
 
@@ -36,10 +42,9 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         permissionManager = new PermissionManager(this);
-
-
-
         findViews();
+        main_MPC_music_player.setSongTitle("Song Title");
+
         btnActions();
     }
 
@@ -91,15 +96,15 @@ public class MainActivity extends AppCompatActivity{
 
 
     private void findViews() {
-        main_MTV_name = findViewById(R.id.main_MTV_name);
-
-
         main_MB_play = findViewById(R.id.main_MB_play);
         main_MB_stop = findViewById(R.id.main_MB_stop);
         main_MB_next = findViewById(R.id.main_MB_next);
         main_MB_previous = findViewById(R.id.main_MB_previous);
         main_MB_pause = findViewById(R.id.main_MB_pause);
         main_MB_resume = findViewById(R.id.main_MB_resume);
+
+        main_MPC_music_player = findViewById(R.id.main_MPC_music_player);
+
     }
 
 }

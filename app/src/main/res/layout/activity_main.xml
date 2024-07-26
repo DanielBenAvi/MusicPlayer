@@ -5,20 +5,13 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".activities.MainActivity">
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/main_MTV_name"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_margin="16dp"
-        />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/main_MB_play"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/main_MTV_name"
         android:text="@string/play"
         android:layout_margin="16dp"
         />
@@ -67,6 +60,14 @@
         android:layout_below="@id/main_MB_next"
         android:text="@string/previous"
         android:layout_margin="16dp"
+        />
+
+    <com.example.musicplayer.components.MusicPlayerComponent
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:layout_below="@id/main_MB_previous"
+        android:layout_margin="16dp"
+        android:id="@+id/main_MPC_music_player"
         />
 
 </RelativeLayout>

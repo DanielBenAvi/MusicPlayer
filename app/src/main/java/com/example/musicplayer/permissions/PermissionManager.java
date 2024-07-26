@@ -1,4 +1,4 @@
-package com.example.musicplayer;
+package com.example.musicplayer.permissions;
 
 import android.Manifest;
 import android.app.Activity;
