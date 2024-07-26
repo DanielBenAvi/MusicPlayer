@@ -1,4 +1,4 @@
-package com.example.musicplayercomponent.MusicPlayerComponent;
+package com.example.musicplayer.components.MusicPlayerComponent;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -9,13 +9,16 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
-import com.example.musicplayercomponent.R;
+import com.example.musicplayer.R;
 import com.google.android.material.textview.MaterialTextView;
 
 public class MusicPlayerComponent extends LinearLayout {
     private static final String TAG = "DDD-MusicPlayerComponent";
 
     private MaterialTextView mpc_TV_title;
+    private ImageButton mpc_IB_play_pause;
+    private ImageButton mpc_IB_next;
+    private ImageButton mpc_IB_previous;
 
     private MusicPlayerComponentListener listener;
 
@@ -48,9 +51,9 @@ public class MusicPlayerComponent extends LinearLayout {
         inflater.inflate(R.layout.music_player_component, this, true);
 
         mpc_TV_title =  findViewById(R.id.mpc_TV_title);
-        ImageButton mpc_IB_play_pause = findViewById(R.id.mpc_IB_play_pause);
-        ImageButton mpc_IB_next = findViewById(R.id.mpc_IB_next);
-        ImageButton mpc_IB_previous = findViewById(R.id.mpc_IB_previous);
+        mpc_IB_play_pause = findViewById(R.id.mpc_IB_play_pause);
+        mpc_IB_next =  findViewById(R.id.mpc_IB_next);
+        mpc_IB_previous =  findViewById(R.id.mpc_IB_previous);
 
         mpc_IB_play_pause.setOnClickListener(v -> {
             Log.d(TAG, "init: play or pause the music");

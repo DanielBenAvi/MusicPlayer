@@ -1,4 +1,4 @@
-package com.example.musicplayercomponent.MusicPlayerComponent;
+package com.example.musicplayer.components.MusicPlayerComponent;
 
 public interface MusicPlayerComponentListener {
     void onPlayPauseClicked();

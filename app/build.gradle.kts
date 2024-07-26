@@ -43,6 +43,4 @@ dependencies {
 
     implementation(libs.core)
     implementation(libs.input)
-
-    implementation(project(":musicplayercomponent"))
 }
