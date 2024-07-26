@@ -21,25 +21,15 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
 
     private MusicPlayerComponent main_MPC_music_player;
 
-
-
-    private PermissionManager permissionManager;
-
-
-    private MediaPlayer mediaPlayer;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate:");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        permissionManager = new PermissionManager(this);
         findViews();
         main_MPC_music_player.setSongTitle("Song Title");
     }
-
-
 
 
     private void findViews() {

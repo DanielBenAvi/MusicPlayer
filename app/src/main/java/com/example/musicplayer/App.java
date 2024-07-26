@@ -3,6 +3,8 @@ package com.example.musicplayer;
 import android.app.Application;
 import android.util.Log;
 
+import com.example.musicplayer.permissions.PermissionManager;
+
 public class App extends Application {
     public static final String TAG = "App";
 
@@ -13,6 +15,7 @@ public class App extends Application {
         super.onCreate();
         Log.d(TAG, "onCreate: App");
 
+        PermissionManager permissionManager = new PermissionManager(this);
 
     }
 }
