@@ -8,23 +8,16 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.musicplayer.components.MusicPlayerComponent;
+import com.example.musicplayer.components.MusicPlayerComponent.MusicPlayerComponent;
+import com.example.musicplayer.components.MusicPlayerComponent.MusicPlayerComponentListener;
 import com.example.musicplayer.services.MusicService;
 import com.example.musicplayer.permissions.PermissionManager;
 import com.example.musicplayer.R;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textview.MaterialTextView;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements MusicPlayerComponentListener {
 
     private static final String TAG = "DDD-MainActivity";
-
-    private MaterialButton main_MB_play;
-    private MaterialButton main_MB_stop;
-    private MaterialButton main_MB_next;
-    private MaterialButton main_MB_previous;
-    private MaterialButton main_MB_pause;
-    private MaterialButton main_MB_resume;
 
     private MusicPlayerComponent main_MPC_music_player;
 
@@ -44,67 +37,37 @@ public class MainActivity extends AppCompatActivity{
         permissionManager = new PermissionManager(this);
         findViews();
         main_MPC_music_player.setSongTitle("Song Title");
-
-        btnActions();
     }
 
-
-    private void btnActions() {
-        main_MB_play.setOnClickListener(v -> {
-            if (permissionManager.isReadStoragePermissionGranted(this)) {
-                Log.d(TAG, "btnActions: Permission Granted");
-                Intent intent = new Intent(this, MusicService.class);
-                intent.setAction(MusicService.ACTION_PLAY);
-                startService(intent);
-            } else {
-                Toast.makeText(this, "Please grant read storage permission", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        main_MB_stop.setOnClickListener(v -> {
-            Intent intent = new Intent(this, MusicService.class);
-            intent.setAction(MusicService.ACTION_STOP);
-            startService(intent);
-        });
-
-        main_MB_next.setOnClickListener(v -> {
-            Intent intent = new Intent(this, MusicService.class);
-            intent.setAction(MusicService.ACTION_NEXT);
-            startService(intent);
-        });
-
-        main_MB_previous.setOnClickListener(v -> {
-            Intent intent = new Intent(this, MusicService.class);
-            intent.setAction(MusicService.ACTION_PREVIOUS);
-            startService(intent);
-        });
-
-        main_MB_pause.setOnClickListener(v -> {
-            Intent intent = new Intent(this, MusicService.class);
-            intent.setAction(MusicService.ACTION_PAUSE);
-            startService(intent);
-        });
-
-        main_MB_resume.setOnClickListener(v -> {
-            Intent intent = new Intent(this, MusicService.class);
-            intent.setAction(MusicService.ACTION_RESUME);
-            startService(intent);
-        });
-
-    }
 
 
 
     private void findViews() {
-        main_MB_play = findViewById(R.id.main_MB_play);
-        main_MB_stop = findViewById(R.id.main_MB_stop);
-        main_MB_next = findViewById(R.id.main_MB_next);
-        main_MB_previous = findViewById(R.id.main_MB_previous);
-        main_MB_pause = findViewById(R.id.main_MB_pause);
-        main_MB_resume = findViewById(R.id.main_MB_resume);
-
         main_MPC_music_player = findViewById(R.id.main_MPC_music_player);
-
+        main_MPC_music_player.setListener(this); // set the listener for the MusicPlayerComponent
     }
 
+    @Override
+    public void onPlayPauseClicked() {
+        Log.d(TAG, "onPlayPauseClicked: ");
+        Intent intent = new Intent(this, MusicService.class);
+        intent.setAction(MusicService.ACTION_PLAY);
+        startService(intent);
+    }
+
+    @Override
+    public void onNextClicked() {
+        Log.d(TAG, "onNextClicked: ");
+        Intent intent = new Intent(this, MusicService.class);
+        intent.setAction(MusicService.ACTION_NEXT);
+        startService(intent);
+    }
+
+    @Override
+    public void onPreviousClicked() {
+        Log.d(TAG, "onPreviousClicked: ");
+        Intent intent = new Intent(this, MusicService.class);
+        intent.setAction(MusicService.ACTION_PREVIOUS);
+        startService(intent);
+    }
 }
