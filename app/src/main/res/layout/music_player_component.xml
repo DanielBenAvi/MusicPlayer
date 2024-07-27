@@ -9,8 +9,10 @@
         android:id="@+id/mpc_TV_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="32dp"
         android:text="@string/not_playing"
         android:gravity="center"
+        android:maxLines="@integer/material_motion_duration_long_1"
         android:autoSizeTextType="uniform"
         android:autoSizeMinTextSize="16sp"
         android:autoSizeMaxTextSize="32sp" />
@@ -21,40 +23,45 @@
         android:gravity="center"
         android:orientation="horizontal">
 
-        <ImageButton
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/mpc_IB_previous"
             android:contentDescription="@string/previous_song"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
-            android:src="@drawable/rewind"
+            android:src="@drawable/skip_previous_24px"
             android:background="@android:color/transparent"
             android:scaleType="fitCenter"
             android:layout_gravity="center"
+            android:clickable="true"
             android:layout_margin="5dp" />
 
-        <ImageButton
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/mpc_IB_play_pause"
             android:contentDescription="@string/play_pause"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
-            android:src="@drawable/play_pause"
+            android:src="@drawable/play_pause_24px"
             android:background="@android:color/transparent"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
+            android:clickable="true"
+
             android:layout_margin="5dp" />
 
-        <ImageButton
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/mpc_IB_next"
             android:contentDescription="@string/next_song"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:scaleType="fitCenter"
             android:layout_height="match_parent"
-            android:src="@drawable/forward"
+            android:src="@drawable/skip_next_24px"
             android:background="@android:color/transparent"
             android:layout_gravity="center"
+            android:clickable="true"
+
             android:layout_margin="5dp" />
 
     </LinearLayout>

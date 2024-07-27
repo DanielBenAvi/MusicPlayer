@@ -75,13 +75,21 @@ public class MusicService extends Service {
                 playMusic(musicFiles.get(currentIndex));
                 break;
         }
-
-        sendSongName(intent, musicFiles.get(currentIndex));
-
         return flags;
     }
 
-    private void sendSongName(Intent intent, String songName) {
+    private void sendSongName(String songPath) {
+        String songName = "";
+
+        // get the song name from the path
+        if (songPath != null) {
+            String[] parts = songPath.split("/");
+            songName = parts[parts.length - 1];
+        }
+
+        // remove the .mp3 extension
+        songName = songName.substring(0, songName.length() - 4);
+
         Log.d(TAG, "sendSongName: "+ songName);
         Intent brodcastIntent = new Intent(ACTION_SEND_SONG_NAME);
         brodcastIntent.putExtra(EXTRA_SONG_NAME, songName);
@@ -126,7 +134,7 @@ public class MusicService extends Service {
             mediaPlayer.prepare();
             mediaPlayer.setOnPreparedListener(mp -> {
                 mediaPlayer.start();
-                sendSongName(new Intent(), filePath); // Send song name after starting the song
+                sendSongName( filePath); // Send song name after starting the song
             });
             mediaPlayer.setOnCompletionListener(mp -> playNextMusic());
         } catch (IOException e) {

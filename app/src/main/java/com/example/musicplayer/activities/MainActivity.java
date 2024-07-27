@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
         IntentFilter intentFilter = new IntentFilter(MusicService.ACTION_SEND_SONG_NAME);
         intentFilter.addAction(MusicService.ACTION_SEND_SONG_NAME);
 
+
         registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED);
     }
 

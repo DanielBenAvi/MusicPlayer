@@ -10,17 +10,20 @@ import android.widget.LinearLayout;
 import androidx.annotation.Nullable;
 
 import com.example.musicplayer.R;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textview.MaterialTextView;
 
 public class MusicPlayerComponent extends LinearLayout {
     private static final String TAG = "DDD-MusicPlayerComponent";
 
     private MaterialTextView mpc_TV_title;
-    private ImageButton mpc_IB_play_pause;
-    private ImageButton mpc_IB_next;
-    private ImageButton mpc_IB_previous;
+    private ShapeableImageView mpc_IB_play_pause;
+    private ShapeableImageView mpc_IB_next;
+    private ShapeableImageView mpc_IB_previous;
 
     private MusicPlayerComponentListener listener;
+
+    private boolean isPlaying = false;
 
     public MusicPlayerComponent(Context context) {
         super(context);
@@ -43,8 +46,6 @@ public class MusicPlayerComponent extends LinearLayout {
     public void setListener(MusicPlayerComponentListener listener) {
         this.listener = listener;
     }
-
-
 
     private void init(Context context) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
