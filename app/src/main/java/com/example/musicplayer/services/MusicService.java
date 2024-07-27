@@ -161,5 +161,19 @@ public class MusicService extends Service {
         return fileList;
     }
 
+    /**
+     * Play a song by index
+     * for recycler view
+     *
+     * @param index the index of the song to play
+     */
+    private void playSongByIndex(int index) {
+        if (index < 0 || index >= musicFiles.size()) {
+            return;
+        }
+        currentIndex = index;
+        playMusic(musicFiles.get(currentIndex));
+    }
+
 
 }
