@@ -38,7 +38,6 @@ public class MusicService extends Service {
 
         if (!isInitialized) {
             initializeMediaPlayer();
-            sendSongName(intent, musicFiles.get(currentIndex));
         }
 
         switch (intent.getAction()) {
@@ -46,21 +45,26 @@ public class MusicService extends Service {
                 if (isPlaying) {
                     mediaPlayer.pause();
                     isPlaying = false;
-                } else {
-                    mediaPlayer.start();
-                    isPlaying = true;
+                    break;
                 }
+
+                mediaPlayer.start();
+                isPlaying = true;
                 break;
 
+
             case ACTION_STOP:
-                if (mediaPlayer != null) {
-                    mediaPlayer.release();
+                if (mediaPlayer == null) {
+                    break;
                 }
+
+                mediaPlayer.stop();
+                mediaPlayer.release();
+                mediaPlayer = null;
                 break;
 
             case ACTION_NEXT:
                 playNextMusic();
-                sendSongName(intent, musicFiles.get(currentIndex));
                 break;
 
             case ACTION_PREVIOUS:
@@ -69,9 +73,11 @@ public class MusicService extends Service {
                 }
                 currentIndex = (currentIndex - 1) % musicFiles.size();
                 playMusic(musicFiles.get(currentIndex));
-                sendSongName(intent, musicFiles.get(currentIndex));
                 break;
         }
+
+        sendSongName(intent, musicFiles.get(currentIndex));
+
         return flags;
     }
 
@@ -118,7 +124,10 @@ public class MusicService extends Service {
         try {
             mediaPlayer.setDataSource(this, Uri.parse(filePath));
             mediaPlayer.prepare();
-            mediaPlayer.start();
+            mediaPlayer.setOnPreparedListener(mp -> {
+                mediaPlayer.start();
+                sendSongName(new Intent(), filePath); // Send song name after starting the song
+            });
             mediaPlayer.setOnCompletionListener(mp -> playNextMusic());
         } catch (IOException e) {
             Log.d(TAG, "playMusic: "+ e.getMessage());
