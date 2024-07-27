@@ -64,7 +64,9 @@ public class MusicService extends Service {
                 break;
 
             case ACTION_PREVIOUS:
-                // todo - crushes
+                if (currentIndex == 0) {
+                    currentIndex = musicFiles.size() - 1;
+                }
                 currentIndex = (currentIndex - 1) % musicFiles.size();
                 playMusic(musicFiles.get(currentIndex));
                 sendSongName(intent, musicFiles.get(currentIndex));

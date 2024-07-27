@@ -9,4 +9,8 @@
     <string name="next">next</string>
     <string name="previous">previous</string>
     <string name="resume">resume</string>
+    <string name="not_playing">Not Playing</string>
+    <string name="previous_song">Previous Song</string>
+    <string name="play_pause">Play/Pause</string>
+    <string name="next_song">Next Song</string>
 </resources>

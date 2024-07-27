@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
 
     private void findViews() {
         main_MPC_music_player = findViewById(R.id.main_MPC_music_player);
-//        main_MPC_music_player.setSongTitle("Song Title");
+        main_MPC_music_player.setSongTitle("Nothing is playing");
         main_MPC_music_player.setListener(this); // set the listener for the MusicPlayerComponent
     }
 

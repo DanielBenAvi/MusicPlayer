@@ -9,10 +9,11 @@
         android:id="@+id/mpc_TV_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Title"
+        android:text="@string/not_playing"
         android:gravity="center"
-        android:textSize="32sp"
-        android:textStyle="bold" />
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="16sp"
+        android:autoSizeMaxTextSize="32sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,7 +23,7 @@
 
         <ImageButton
             android:id="@+id/mpc_IB_previous"
-            android:contentDescription="Previous Song"
+            android:contentDescription="@string/previous_song"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
@@ -34,7 +35,7 @@
 
         <ImageButton
             android:id="@+id/mpc_IB_play_pause"
-            android:contentDescription="Play/Pause"
+            android:contentDescription="@string/play_pause"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
@@ -46,7 +47,7 @@
 
         <ImageButton
             android:id="@+id/mpc_IB_next"
-            android:contentDescription="Next Song"
+            android:contentDescription="@string/next_song"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:scaleType="fitCenter"
