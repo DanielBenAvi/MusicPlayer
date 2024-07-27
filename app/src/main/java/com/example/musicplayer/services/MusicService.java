@@ -22,45 +22,62 @@ public class MusicService extends Service {
     public static final String ACTION_STOP = "ACTION_STOP";
     public static final String ACTION_NEXT = "ACTION_NEXT";
     public static final String ACTION_PREVIOUS = "ACTION_PREVIOUS";
-    public static final String ACTION_PAUSE = "ACTION_PAUSE";
-    public static final String ACTION_RESUME = "ACTION_RESUME";
 
+    public static final String ACTION_SEND_SONG_NAME = "ACTION_SEND_SONG_NAME";
+
+    public static final String EXTRA_SONG_NAME = "EXTRA_SONG_NAME";
 
     private MediaPlayer mediaPlayer;
     private ArrayList<String> musicFiles;
     private int currentIndex = 0;
+    private boolean isInitialized = false;
+    private boolean isPlaying = false;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         assert intent.getAction() != null;
 
+        if (!isInitialized) {
+            initializeMediaPlayer();
+            sendSongName(intent, musicFiles.get(currentIndex));
+        }
+
         switch (intent.getAction()) {
             case ACTION_PLAY:
-                initializeMediaPlayer();
+                if (isPlaying) {
+                    mediaPlayer.pause();
+                    isPlaying = false;
+                } else {
+                    mediaPlayer.start();
+                    isPlaying = true;
+                }
                 break;
+
             case ACTION_STOP:
                 if (mediaPlayer != null) {
                     mediaPlayer.release();
                 }
                 break;
+
             case ACTION_NEXT:
                 playNextMusic();
+                sendSongName(intent, musicFiles.get(currentIndex));
                 break;
+
             case ACTION_PREVIOUS:
+                // todo - crushes
                 currentIndex = (currentIndex - 1) % musicFiles.size();
                 playMusic(musicFiles.get(currentIndex));
-                break;
-            case ACTION_PAUSE:
-                if (mediaPlayer != null) {
-                    mediaPlayer.pause();
-                }
-                break;
-            case ACTION_RESUME:
-                if (mediaPlayer != null) {
-                    mediaPlayer.start();
-                }
+                sendSongName(intent, musicFiles.get(currentIndex));
                 break;
         }
         return flags;
+    }
+
+    private void sendSongName(Intent intent, String songName) {
+        Log.d(TAG, "sendSongName: "+ songName);
+        Intent brodcastIntent = new Intent(ACTION_SEND_SONG_NAME);
+        brodcastIntent.putExtra(EXTRA_SONG_NAME, songName);
+        sendBroadcast(brodcastIntent);
     }
 
     @Nullable
@@ -72,6 +89,12 @@ public class MusicService extends Service {
 
 
     private void initializeMediaPlayer() {
+        if (isInitialized) {
+            return;
+        }
+
+        isInitialized = true;
+        isPlaying = true;
         File musicDir = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 ? Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
                 : new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
@@ -118,4 +141,6 @@ public class MusicService extends Service {
         }
         return fileList;
     }
+
+
 }
