@@ -2,23 +2,23 @@ package com.example.musicplayer.components.SongListRV;
 
 import androidx.annotation.NonNull;
 
-public class SongListItem {
+public class Song {
     String songName;
     int songDuration;
     String songArtist;
 
-    public SongListItem(String songName) {
+    public Song(String songName) {
         this.songName = songName;
     }
 
-    public SongListItem() {
+    public Song() {
     }
 
     public String getSongName() {
         return songName;
     }
 
-    public SongListItem setSongName(String songName) {
+    public Song setSongName(String songName) {
         this.songName = songName;
         return this;
     }
@@ -27,7 +27,7 @@ public class SongListItem {
         return songDuration;
     }
 
-    public SongListItem setSongDuration(int songDuration) {
+    public Song setSongDuration(int songDuration) {
         this.songDuration = songDuration;
         return this;
     }
@@ -36,7 +36,7 @@ public class SongListItem {
         return songArtist;
     }
 
-    public SongListItem setSongArtist(String songArtist) {
+    public Song setSongArtist(String songArtist) {
         this.songArtist = songArtist;
         return this;
     }

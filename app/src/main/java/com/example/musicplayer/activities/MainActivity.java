@@ -17,11 +17,13 @@ import com.example.musicplayer.components.MusicPlayerComponent.MusicPlayerCompon
 import com.example.musicplayer.components.MusicPlayerComponent.MusicPlayerComponentListener;
 import com.example.musicplayer.components.SongListRV.MusicAdapter;
 import com.example.musicplayer.components.SongListRV.OnItemClickListener;
-import com.example.musicplayer.components.SongListRV.SongListItem;
+import com.example.musicplayer.components.SongListRV.Song;
 import com.example.musicplayer.services.MusicService;
 import com.example.musicplayer.R;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements MusicPlayerComponentListener, OnItemClickListener {
@@ -31,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
     private MusicPlayerComponent main_MPC_music_player;
 
     private RecyclerView main_RV_songs;
-    private ArrayList<SongListItem> songList;
+    private ArrayList<Song> songList;
     private MusicAdapter musicAdapter;
 
 
@@ -63,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
         intentFilter.addAction(MusicService.BROADCAST_GET_LIST_OF_SONGS);
         intentFilter.addAction(MusicService.BROADCAST_SEND_SONG_INDEX);
         intentFilter.addAction(MusicService.BROADCAST_SEND_SONG_DATA);
+        intentFilter.addAction(MusicService.BROADCAST_SEND_All_SONGS_DATA_LIST);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED);
@@ -111,13 +114,13 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
 
             switch (action) {
                 case MusicService.BROADCAST_GET_LIST_OF_SONGS:
-                    ArrayList<String> songsList = intent.getStringArrayListExtra(MusicService.EXTRA_SONGS_LIST);
-                    songList.clear();
-                    assert songsList != null;
-                    for (String song : songsList) {
-                        songList.add(new SongListItem(MusicService.pathToSongName(song)));
-                    }
-                    musicAdapter.notifyDataSetChanged();
+//                    ArrayList<String> songsList = intent.getStringArrayListExtra(MusicService.EXTRA_SONGS_LIST);
+//                    songList.clear();
+//                    assert songsList != null;
+//                    for (String song : songsList) {
+//                        songList.add(new Song(MusicService.pathToSongName(song)));
+//                    }
+//                    musicAdapter.notifyDataSetChanged();
                     break;
                 case MusicService.BROADCAST_SEND_SONG_INDEX:
                     int index = intent.getIntExtra(MusicService.EXTRA_SONG_INDEX, 0);
@@ -125,16 +128,18 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
                     break;
                 case MusicService.BROADCAST_SEND_SONG_DATA:
                     String songData = intent.getStringExtra(MusicService.EXTRA_SONG_DATA);
-                    SongListItem songListItem = new Gson().fromJson(songData, SongListItem.class);
+                    Song songListItem = new Gson().fromJson(songData, Song.class);
                     main_MPC_music_player.setSongTitle(songListItem.getSongName());
+                    break;
 
                 case MusicService.BROADCAST_SEND_All_SONGS_DATA_LIST:
-//                    String allSongsData = intent.getStringExtra(MusicService.EXTRA_ALL_SONGS_DATA_LIST);
-//                    ArrayList songListItems = new Gson().fromJson(allSongsData, ArrayList.class);
-//                    songList.clear();
-//                    songList.addAll(songListItems);
-//                    musicAdapter.notifyDataSetChanged();
-
+                    String allSongsData = intent.getStringExtra(MusicService.EXTRA_ALL_SONGS_DATA_LIST);
+                    Type listType = new TypeToken<ArrayList<Song>>() {}.getType();
+                    ArrayList<Song> songs = new Gson().fromJson(allSongsData, listType);
+                    Log.d(TAG, "onReceive: " + songs);
+                    songList.clear();
+                    songList.addAll(songs);
+                    musicAdapter.notifyDataSetChanged();
                     break;
                 default:
                     break;
@@ -150,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
     }
 
     @Override
-    public void onItemClick(SongListItem songListItem, int position) {
+    public void onItemClick(Song songListItem, int position) {
         Intent intent = new Intent(this, MusicService.class);
         intent.setAction(MusicService.ACTION_SET_CLICKED_SONG);
         intent.putExtra(MusicService.EXTRA_SONG_INDEX, position);

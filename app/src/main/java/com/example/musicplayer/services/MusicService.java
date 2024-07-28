@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import com.example.musicplayer.components.SongListRV.SongListItem;
+import com.example.musicplayer.components.SongListRV.Song;
 import com.google.gson.Gson;
 
 import java.io.File;
@@ -111,7 +111,7 @@ public class MusicService extends Service {
     }
 
     private void sendSongData(String songPath) {
-        SongListItem songListItem = getSongData(songPath);
+        Song songListItem = getSongData(songPath);
 
         String songListItemGson = new Gson().toJson(songListItem);
         Intent songListItemIntent = new Intent(BROADCAST_SEND_SONG_DATA);
@@ -125,7 +125,7 @@ public class MusicService extends Service {
         brodcastIntent.putStringArrayListExtra(EXTRA_SONGS_LIST, musicFiles);
         sendBroadcast(brodcastIntent);
 
-        ArrayList<SongListItem> songListItems = new ArrayList<>();
+        ArrayList<Song> songListItems = new ArrayList<>();
         for (String songPath : musicFiles) {
             songListItems.add(getSongData(songPath));
         }
@@ -224,13 +224,13 @@ public class MusicService extends Service {
         return parts[parts.length - 1].substring(0, parts[parts.length - 1].length() - 4);
     }
 
-    public SongListItem getSongData(String songPath) {
+    public Song getSongData(String songPath) {
         mediaMetadataRetriever.setDataSource(songPath);
         String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
         int durationInSeconds = Integer.parseInt(duration) / 1000;
         String artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
 
-        return new SongListItem()
+        return new Song()
                 .setSongName(pathToSongName(songPath))
                 .setSongDuration(durationInSeconds)
                 .setSongArtist(artist);

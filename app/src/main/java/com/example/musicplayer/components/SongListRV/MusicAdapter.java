@@ -15,12 +15,12 @@ import com.example.musicplayer.R;
 import java.util.List;
 
 public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHolder> {
-    private final List<SongListItem> songList;
+    private final List<Song> songList;
     private final OnItemClickListener listener;
 
     private int selectedPosition = RecyclerView.NO_POSITION;
 
-    public MusicAdapter(List<SongListItem> songList, OnItemClickListener listener) {
+    public MusicAdapter(List<Song> songList, OnItemClickListener listener) {
         this.songList = songList;
         this.listener = listener;
     }
@@ -34,7 +34,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
     @Override
     public void onBindViewHolder(@NonNull MusicAdapter.MusicViewHolder holder, int position) {
-        SongListItem songListItem = songList.get(position);
+        Song songListItem = songList.get(position);
         holder.songTitle.setText(songListItem.getSongName());
 
 
