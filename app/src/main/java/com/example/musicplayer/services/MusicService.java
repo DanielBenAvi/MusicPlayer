@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MusicService extends Service {
     public static final String TAG = "DDD-MusicServer";
@@ -22,10 +23,14 @@ public class MusicService extends Service {
     public static final String ACTION_STOP = "ACTION_STOP";
     public static final String ACTION_NEXT = "ACTION_NEXT";
     public static final String ACTION_PREVIOUS = "ACTION_PREVIOUS";
+    public static final String ACTION_SET_CLICKED_SONG = "ACTION_SET_CLICKED_SONG";
 
     public static final String ACTION_SEND_SONG_NAME = "ACTION_SEND_SONG_NAME";
+    public static final String GET_LIST_OF_SONGS = "GET_LIST_OF_SONGS";
 
     public static final String EXTRA_SONG_NAME = "EXTRA_SONG_NAME";
+    public static final String EXTRA_SONGS_LIST = "EXTRA_SONGS_LIST";
+    public static final String EXTRA_SONG_INDEX = "EXTRA_SONG_INDEX";
 
     private MediaPlayer mediaPlayer;
     private ArrayList<String> musicFiles;
@@ -74,27 +79,31 @@ public class MusicService extends Service {
                 currentIndex = (currentIndex - 1) % musicFiles.size();
                 playMusic(musicFiles.get(currentIndex));
                 break;
+
+            case ACTION_SET_CLICKED_SONG:
+                int index = intent.getIntExtra("index", -1);
+                playSongByIndex(index);
+                break;
         }
         return flags;
     }
 
     private void sendSongName(String songPath) {
-        String songName = "";
-
-        // get the song name from the path
-        if (songPath != null) {
-            String[] parts = songPath.split("/");
-            songName = parts[parts.length - 1];
-        }
-
-        // remove the .mp3 extension
-        songName = songName.substring(0, songName.length() - 4);
-
-        Log.d(TAG, "sendSongName: "+ songName);
+        Log.d(TAG, "sendSongName: "+ pathToSongName(songPath));
         Intent brodcastIntent = new Intent(ACTION_SEND_SONG_NAME);
-        brodcastIntent.putExtra(EXTRA_SONG_NAME, songName);
+        brodcastIntent.putExtra(EXTRA_SONG_NAME, pathToSongName(songPath));
         sendBroadcast(brodcastIntent);
     }
+
+
+    private void sendSongsList() {
+        Log.d(TAG, "sendSongsList: "+ musicFiles);
+        Intent brodcastIntent = new Intent(GET_LIST_OF_SONGS);
+        brodcastIntent.putStringArrayListExtra(EXTRA_SONGS_LIST, musicFiles);
+        sendBroadcast(brodcastIntent);
+    }
+
+
 
     @Nullable
     @Override
@@ -122,6 +131,8 @@ public class MusicService extends Service {
         } else {
             Toast.makeText(this, "No music files found", Toast.LENGTH_SHORT).show();
         }
+
+        sendSongsList();
     }
 
     private void playMusic(String filePath) {
@@ -175,5 +186,8 @@ public class MusicService extends Service {
         playMusic(musicFiles.get(currentIndex));
     }
 
-
+    public static String pathToSongName(String path) {
+        String[] parts = path.split("/");
+        return parts[parts.length - 1].substring(0, parts[parts.length - 1].length() - 4);
+    }
 }
