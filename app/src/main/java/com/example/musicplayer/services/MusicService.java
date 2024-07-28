@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -15,19 +14,23 @@ import androidx.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class MusicService extends Service {
     public static final String TAG = "DDD-MusicServer";
+
+    // Actions
+    public static final String ACTION_INIT_PLAYER = "ACTION_INIT_PLAYER";
     public static final String ACTION_PLAY = "ACTION_PLAY";
     public static final String ACTION_STOP = "ACTION_STOP";
     public static final String ACTION_NEXT = "ACTION_NEXT";
     public static final String ACTION_PREVIOUS = "ACTION_PREVIOUS";
     public static final String ACTION_SET_CLICKED_SONG = "ACTION_SET_CLICKED_SONG";
 
-    public static final String ACTION_SEND_SONG_NAME = "ACTION_SEND_SONG_NAME";
-    public static final String GET_LIST_OF_SONGS = "GET_LIST_OF_SONGS";
+    // Broadcast actions (SERVICE -> ACTIVITY)
+    public static final String BROADCAST_SEND_SONG_NAME = "ACTION_SEND_SONG_NAME";
+    public static final String BROADCAST_GET_LIST_OF_SONGS = "ACTION_GET_LIST_OF_SONGS";
 
+    // Extras (ACTIVITY -> SERVICE)
     public static final String EXTRA_SONG_NAME = "EXTRA_SONG_NAME";
     public static final String EXTRA_SONGS_LIST = "EXTRA_SONGS_LIST";
     public static final String EXTRA_SONG_INDEX = "EXTRA_SONG_INDEX";
@@ -41,12 +44,21 @@ public class MusicService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         assert intent.getAction() != null;
 
-        if (!isInitialized) {
-            initializeMediaPlayer();
-        }
-
         switch (intent.getAction()) {
+            case ACTION_INIT_PLAYER:
+                initializeMediaPlayer();
+                break;
+
             case ACTION_PLAY:
+
+                if (isInitialized && !isPlaying) {
+                    playMusic(musicFiles.get(currentIndex));
+                    isPlaying = true;
+                    break;
+                }
+
+                assert mediaPlayer != null;
+
                 if (isPlaying) {
                     mediaPlayer.pause();
                     isPlaying = false;
@@ -56,7 +68,6 @@ public class MusicService extends Service {
                 mediaPlayer.start();
                 isPlaying = true;
                 break;
-
 
             case ACTION_STOP:
                 if (mediaPlayer == null) {
@@ -81,7 +92,9 @@ public class MusicService extends Service {
                 break;
 
             case ACTION_SET_CLICKED_SONG:
-                int index = intent.getIntExtra("index", -1);
+                int index = intent.getIntExtra(EXTRA_SONG_INDEX, 0);
+                assert musicFiles != null;
+
                 playSongByIndex(index);
                 break;
         }
@@ -89,20 +102,17 @@ public class MusicService extends Service {
     }
 
     private void sendSongName(String songPath) {
-        Log.d(TAG, "sendSongName: "+ pathToSongName(songPath));
-        Intent brodcastIntent = new Intent(ACTION_SEND_SONG_NAME);
+        Intent brodcastIntent = new Intent(BROADCAST_SEND_SONG_NAME);
         brodcastIntent.putExtra(EXTRA_SONG_NAME, pathToSongName(songPath));
         sendBroadcast(brodcastIntent);
     }
 
 
-    private void sendSongsList() {
-        Log.d(TAG, "sendSongsList: "+ musicFiles);
-        Intent brodcastIntent = new Intent(GET_LIST_OF_SONGS);
+    private void sendSongsListToActivity() {
+        Intent brodcastIntent = new Intent(BROADCAST_GET_LIST_OF_SONGS);
         brodcastIntent.putStringArrayListExtra(EXTRA_SONGS_LIST, musicFiles);
         sendBroadcast(brodcastIntent);
     }
-
 
 
     @Nullable
@@ -119,20 +129,18 @@ public class MusicService extends Service {
         }
 
         isInitialized = true;
-        isPlaying = true;
+
         File musicDir = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 ? Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
                 : new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
 
         musicFiles = getMusicFilesFromDirectory(musicDir);
 
-        if (!musicFiles.isEmpty()) {
-            playMusic(musicFiles.get(currentIndex));
-        } else {
+        if (musicFiles.isEmpty()) {
             Toast.makeText(this, "No music files found", Toast.LENGTH_SHORT).show();
         }
 
-        sendSongsList();
+        sendSongsListToActivity();
     }
 
     private void playMusic(String filePath) {
@@ -145,11 +153,10 @@ public class MusicService extends Service {
             mediaPlayer.prepare();
             mediaPlayer.setOnPreparedListener(mp -> {
                 mediaPlayer.start();
-                sendSongName( filePath); // Send song name after starting the song
+                sendSongName(filePath); // Send song name after starting the song
             });
             mediaPlayer.setOnCompletionListener(mp -> playNextMusic());
         } catch (IOException e) {
-            Log.d(TAG, "playMusic: "+ e.getMessage());
             Toast.makeText(this, "Error playing file: " + filePath, Toast.LENGTH_SHORT).show();
         }
     }

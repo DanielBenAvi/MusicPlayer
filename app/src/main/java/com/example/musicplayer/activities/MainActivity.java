@@ -4,8 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,45 +34,50 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate:");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         findViews();
+        setupMusicService();
         setupRecyclerView();
-
-        IntentFilter intentFilter = new IntentFilter(MusicService.ACTION_SEND_SONG_NAME);
-        intentFilter.addAction(MusicService.ACTION_SEND_SONG_NAME);
-
-        intentFilter.addAction(MusicService.GET_LIST_OF_SONGS);
-
-
-
-        registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED);
     }
 
 
     private void findViews() {
         main_MPC_music_player = findViewById(R.id.main_MPC_music_player);
+        main_RV_songs = findViewById(R.id.main_RV_songs);
+    }
+
+    private void setupMusicService() {
         main_MPC_music_player.setSongTitle("Nothing is playing");
         main_MPC_music_player.setListener(this); // set the listener for the MusicPlayerComponent
 
+        Intent intent = new Intent(this, MusicService.class);
+        intent.setAction(MusicService.ACTION_INIT_PLAYER);
+        startService(intent);
+
+        IntentFilter intentFilter = new IntentFilter(MusicService.BROADCAST_SEND_SONG_NAME);
+        intentFilter.addAction(MusicService.BROADCAST_SEND_SONG_NAME);
+        intentFilter.addAction(MusicService.BROADCAST_GET_LIST_OF_SONGS);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED);
+        } else {
+            // TODO: fix this
+            Toast.makeText(this, "SDK version is too low", Toast.LENGTH_SHORT).show();
+        }
 
     }
 
     private void setupRecyclerView() {
-        main_RV_songs = findViewById(R.id.main_RV_songs);
         main_RV_songs.setLayoutManager(new LinearLayoutManager(this));
         songList = new ArrayList<>();
         musicAdapter = new MusicAdapter(songList, this);
         main_RV_songs.setAdapter(musicAdapter);
-
-
     }
 
     @Override
     public void onPlayPauseClicked() {
-        Log.d(TAG, "onPlayPauseClicked: ");
         Intent intent = new Intent(this, MusicService.class);
         intent.setAction(MusicService.ACTION_PLAY);
         startService(intent);
@@ -80,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
 
     @Override
     public void onNextClicked() {
-        Log.d(TAG, "onNextClicked: ");
         Intent intent = new Intent(this, MusicService.class);
         intent.setAction(MusicService.ACTION_NEXT);
         startService(intent);
@@ -88,7 +92,6 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
 
     @Override
     public void onPreviousClicked() {
-        Log.d(TAG, "onPreviousClicked: ");
         Intent intent = new Intent(this, MusicService.class);
         intent.setAction(MusicService.ACTION_PREVIOUS);
         startService(intent);
@@ -98,31 +101,25 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive: ");
             String action = intent.getAction();
 
             assert action != null;
 
             switch (action) {
-                case MusicService.ACTION_SEND_SONG_NAME:
+                case MusicService.BROADCAST_SEND_SONG_NAME:
                     String songName = intent.getStringExtra(MusicService.EXTRA_SONG_NAME);
-                    Log.d(TAG, "onReceive: songName: " + songName);
                     main_MPC_music_player.setSongTitle(songName);
                     break;
-                case MusicService.GET_LIST_OF_SONGS:
+                case MusicService.BROADCAST_GET_LIST_OF_SONGS:
                     ArrayList<String> songsList = intent.getStringArrayListExtra(MusicService.EXTRA_SONGS_LIST);
-                    Log.d(TAG, "onReceive: songsList: " + songsList);
                     songList.clear();
                     assert songsList != null;
                     for (String song : songsList) {
                         songList.add(new SongListItem(MusicService.pathToSongName(song)));
                     }
                     musicAdapter.notifyDataSetChanged();
-
-                    Log.d(TAG, "onReceive: songsList: " + songsList);
                     break;
                 default:
-                    Log.d(TAG, "onReceive: default");
                     break;
             }
         }
@@ -132,18 +129,14 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy: unregisterReceiver");
         unregisterReceiver(broadcastReceiver);
     }
 
-
     @Override
     public void onItemClick(SongListItem songListItem, int position) {
-        Log.d(TAG, "onItemClick: songListItem: " + songListItem.getSongName());
-        // play the song that was clicked
         Intent intent = new Intent(this, MusicService.class);
         intent.setAction(MusicService.ACTION_SET_CLICKED_SONG);
-        intent.putExtra("index", position);
+        intent.putExtra(MusicService.EXTRA_SONG_INDEX, position);
         startService(intent);
     }
 }

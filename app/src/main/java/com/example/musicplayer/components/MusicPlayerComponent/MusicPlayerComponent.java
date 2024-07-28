@@ -2,9 +2,7 @@ package com.example.musicplayer.components.MusicPlayerComponent;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
@@ -14,28 +12,18 @@ import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textview.MaterialTextView;
 
 public class MusicPlayerComponent extends LinearLayout {
-    private static final String TAG = "DDD-MusicPlayerComponent";
 
     private MaterialTextView mpc_TV_title;
-    private ShapeableImageView mpc_IB_play_pause;
-    private ShapeableImageView mpc_IB_next;
-    private ShapeableImageView mpc_IB_previous;
 
     private MusicPlayerComponentListener listener;
 
-    private boolean isPlaying = false;
-
     public MusicPlayerComponent(Context context) {
         super(context);
-        Log.d(TAG, "MusicPlayerComponent: ");
-
         init(context);
     }
 
     public MusicPlayerComponent(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        Log.d(TAG, "MusicPlayerComponent: ");
-
         init(context);
     }
     /**
@@ -52,27 +40,15 @@ public class MusicPlayerComponent extends LinearLayout {
         inflater.inflate(R.layout.music_player_component, this, true);
 
         mpc_TV_title =  findViewById(R.id.mpc_TV_title);
-        mpc_IB_play_pause = findViewById(R.id.mpc_IB_play_pause);
-        mpc_IB_next =  findViewById(R.id.mpc_IB_next);
-        mpc_IB_previous =  findViewById(R.id.mpc_IB_previous);
+        ShapeableImageView mpc_IB_play_pause = findViewById(R.id.mpc_IB_play_pause);
+        ShapeableImageView mpc_IB_next = findViewById(R.id.mpc_IB_next);
+        ShapeableImageView mpc_IB_previous = findViewById(R.id.mpc_IB_previous);
 
-        mpc_IB_play_pause.setOnClickListener(v -> {
-            Log.d(TAG, "init: play or pause the music");
-            // play or pause the music
-            listener.onPlayPauseClicked();
-        });
+        mpc_IB_play_pause.setOnClickListener(v -> listener.onPlayPauseClicked());
 
-        mpc_IB_next.setOnClickListener(v -> {
-            Log.d(TAG, "init: play the next song");
-            // play the next song
-            listener.onNextClicked();
-        });
+        mpc_IB_next.setOnClickListener(v -> listener.onNextClicked());
 
-        mpc_IB_previous.setOnClickListener(v -> {
-            Log.d(TAG, "init: play the previous song");
-            // play the previous song
-            listener.onPreviousClicked();
-        });
+        mpc_IB_previous.setOnClickListener(v -> listener.onPreviousClicked());
     }
 
     public void setSongTitle(String title) {

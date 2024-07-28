@@ -15,8 +15,6 @@ import com.example.musicplayer.R;
 import java.util.List;
 
 public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHolder> {
-
-    private static final String TAG = "DDD-MusicAdapter";
     private final List<SongListItem> songList;
     private final OnItemClickListener listener;
 
@@ -38,6 +36,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
     public void onBindViewHolder(@NonNull MusicAdapter.MusicViewHolder holder, int position) {
         SongListItem songListItem = songList.get(position);
         holder.songTitle.setText(songListItem.getSongName());
+
 
         if (selectedPosition == position) {
             holder.itemView.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.selected_item));
