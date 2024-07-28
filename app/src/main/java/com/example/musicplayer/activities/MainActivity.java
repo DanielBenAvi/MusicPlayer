@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import com.example.musicplayer.components.SongListRV.OnItemClickListener;
 import com.example.musicplayer.components.SongListRV.SongListItem;
 import com.example.musicplayer.services.MusicService;
 import com.example.musicplayer.R;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
     private RecyclerView main_RV_songs;
     private ArrayList<SongListItem> songList;
     private MusicAdapter musicAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +59,10 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
         intent.setAction(MusicService.ACTION_INIT_PLAYER);
         startService(intent);
 
-        IntentFilter intentFilter = new IntentFilter(MusicService.BROADCAST_SEND_SONG_NAME);
-        intentFilter.addAction(MusicService.BROADCAST_SEND_SONG_NAME);
+        IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(MusicService.BROADCAST_GET_LIST_OF_SONGS);
         intentFilter.addAction(MusicService.BROADCAST_SEND_SONG_INDEX);
+        intentFilter.addAction(MusicService.BROADCAST_SEND_SONG_DATA);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED);
@@ -107,10 +110,6 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
             assert action != null;
 
             switch (action) {
-                case MusicService.BROADCAST_SEND_SONG_NAME:
-                    String songName = intent.getStringExtra(MusicService.EXTRA_SONG_NAME);
-                    main_MPC_music_player.setSongTitle(songName);
-                    break;
                 case MusicService.BROADCAST_GET_LIST_OF_SONGS:
                     ArrayList<String> songsList = intent.getStringArrayListExtra(MusicService.EXTRA_SONGS_LIST);
                     songList.clear();
@@ -123,6 +122,13 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
                 case MusicService.BROADCAST_SEND_SONG_INDEX:
                     int index = intent.getIntExtra(MusicService.EXTRA_SONG_INDEX, 0);
                     musicAdapter.setSelectedIndex(index);
+                    break;
+                case MusicService.BROADCAST_SEND_SONG_DATA:
+                    String songData = intent.getStringExtra(MusicService.EXTRA_SONG_DATA);
+                    SongListItem songListItem = new Gson().fromJson(songData, SongListItem.class);
+                    main_MPC_music_player.setSongTitle(songListItem.getSongName());
+
+
                     break;
                 default:
                     break;

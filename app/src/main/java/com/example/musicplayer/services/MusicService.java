@@ -2,14 +2,19 @@ package com.example.musicplayer.services;
 
 import android.app.Service;
 import android.content.Intent;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+
+import com.example.musicplayer.components.SongListRV.SongListItem;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,13 +35,17 @@ public class MusicService extends Service {
     public static final String BROADCAST_SEND_SONG_NAME = "ACTION_SEND_SONG_NAME";
     public static final String BROADCAST_GET_LIST_OF_SONGS = "ACTION_GET_LIST_OF_SONGS";
     public static final String BROADCAST_SEND_SONG_INDEX = "BROADCAST_SEND_SONG_INDEX";
+    public static final String BROADCAST_SEND_SONG_DATA = "BROADCAST_SEND_SONG_DATA";
+
 
     // Extras (ACTIVITY -> SERVICE)
     public static final String EXTRA_SONG_NAME = "EXTRA_SONG_NAME";
     public static final String EXTRA_SONGS_LIST = "EXTRA_SONGS_LIST";
     public static final String EXTRA_SONG_INDEX = "EXTRA_SONG_INDEX";
+    public static final String EXTRA_SONG_DATA = "EXTRA_SONG_DATA";
 
     private MediaPlayer mediaPlayer;
+    private MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
     private ArrayList<String> musicFiles;
     private int currentIndex = 0;
     private boolean isInitialized = false;
@@ -101,10 +110,21 @@ public class MusicService extends Service {
         return flags;
     }
 
-    private void sendSongName(String songPath) {
-        Intent brodcastIntent = new Intent(BROADCAST_SEND_SONG_NAME);
-        brodcastIntent.putExtra(EXTRA_SONG_NAME, pathToSongName(songPath));
-        sendBroadcast(brodcastIntent);
+    private void sendSongData(String songPath) {
+        mediaMetadataRetriever.setDataSource(songPath);
+        String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        int durationInSeconds = Integer.parseInt(duration) / 1000;
+        String artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+
+        SongListItem songListItem = new SongListItem()
+                .setSongName(pathToSongName(songPath))
+                .setSongDuration(durationInSeconds)
+                .setSongArtist(artist);
+
+        String songListItemGson = new Gson().toJson(songListItem);
+        Intent songListItemIntent = new Intent(BROADCAST_SEND_SONG_DATA);
+        songListItemIntent.putExtra(EXTRA_SONG_DATA, songListItemGson);
+        sendBroadcast(songListItemIntent);
     }
 
 
@@ -159,7 +179,7 @@ public class MusicService extends Service {
             mediaPlayer.prepare();
             mediaPlayer.setOnPreparedListener(mp -> {
                 mediaPlayer.start();
-                sendSongName(filePath); // Send song name after starting the song
+                sendSongData(filePath); // Send song name after starting the song
                 sendSongIndex(currentIndex); // Send song index after starting the song
             });
             mediaPlayer.setOnCompletionListener(mp -> playNextMusic());
