@@ -30,7 +30,6 @@ public class MusicService extends Service {
     public static final String ACTION_PREVIOUS = "ACTION_PREVIOUS";
     public static final String ACTION_SET_CLICKED_SONG = "ACTION_SET_CLICKED_SONG";
 
-    public static final String BROADCAST_GET_LIST_OF_SONGS = "ACTION_GET_LIST_OF_SONGS";
     public static final String BROADCAST_SEND_SONG_INDEX = "BROADCAST_SEND_SONG_INDEX";
     public static final String BROADCAST_SEND_SONG_DATA = "BROADCAST_SEND_SONG_DATA";
     public static final String BROADCAST_SEND_All_SONGS_DATA_LIST = "BROADCAST_SEND_All_SONGS_DATA_LIST";
@@ -121,10 +120,6 @@ public class MusicService extends Service {
 
 
     private void sendSongsListToActivity() {
-        Intent brodcastIntent = new Intent(BROADCAST_GET_LIST_OF_SONGS);
-        brodcastIntent.putStringArrayListExtra(EXTRA_SONGS_LIST, musicFiles);
-        sendBroadcast(brodcastIntent);
-
         ArrayList<Song> songListItems = new ArrayList<>();
         for (String songPath : musicFiles) {
             songListItems.add(getSongData(songPath));

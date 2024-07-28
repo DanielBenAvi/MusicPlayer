@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
         setContentView(R.layout.activity_main);
 
         findViews();
+        setupMusicComponent();
         setupMusicService();
         setupRecyclerView();
     }
@@ -53,16 +54,13 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
         main_RV_songs = findViewById(R.id.main_RV_songs);
     }
 
-    private void setupMusicService() {
-        main_MPC_music_player.setSongTitle("Nothing is playing");
-        main_MPC_music_player.setListener(this); // set the listener for the MusicPlayerComponent
 
+    private void setupMusicService() {
         Intent intent = new Intent(this, MusicService.class);
         intent.setAction(MusicService.ACTION_INIT_PLAYER);
         startService(intent);
 
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(MusicService.BROADCAST_GET_LIST_OF_SONGS);
         intentFilter.addAction(MusicService.BROADCAST_SEND_SONG_INDEX);
         intentFilter.addAction(MusicService.BROADCAST_SEND_SONG_DATA);
         intentFilter.addAction(MusicService.BROADCAST_SEND_All_SONGS_DATA_LIST);
@@ -104,6 +102,12 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
         startService(intent);
     }
 
+    @Override
+    public void setupMusicComponent() {
+        main_MPC_music_player.setSongTitle("Nothing is playing");
+        main_MPC_music_player.setListener(this);
+    }
+
 
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -113,15 +117,7 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
             assert action != null;
 
             switch (action) {
-                case MusicService.BROADCAST_GET_LIST_OF_SONGS:
-//                    ArrayList<String> songsList = intent.getStringArrayListExtra(MusicService.EXTRA_SONGS_LIST);
-//                    songList.clear();
-//                    assert songsList != null;
-//                    for (String song : songsList) {
-//                        songList.add(new Song(MusicService.pathToSongName(song)));
-//                    }
-//                    musicAdapter.notifyDataSetChanged();
-                    break;
+
                 case MusicService.BROADCAST_SEND_SONG_INDEX:
                     int index = intent.getIntExtra(MusicService.EXTRA_SONG_INDEX, 0);
                     musicAdapter.setSelectedIndex(index);

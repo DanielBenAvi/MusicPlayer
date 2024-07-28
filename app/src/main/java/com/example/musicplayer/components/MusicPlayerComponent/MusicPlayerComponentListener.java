@@ -4,4 +4,5 @@ public interface MusicPlayerComponentListener {
     void onPlayPauseClicked();
     void onNextClicked();
     void onPreviousClicked();
+    void setupMusicComponent();
 }
