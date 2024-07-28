@@ -29,6 +29,7 @@ public class MusicService extends Service {
     // Broadcast actions (SERVICE -> ACTIVITY)
     public static final String BROADCAST_SEND_SONG_NAME = "ACTION_SEND_SONG_NAME";
     public static final String BROADCAST_GET_LIST_OF_SONGS = "ACTION_GET_LIST_OF_SONGS";
+    public static final String BROADCAST_SEND_SONG_INDEX = "BROADCAST_SEND_SONG_INDEX";
 
     // Extras (ACTIVITY -> SERVICE)
     public static final String EXTRA_SONG_NAME = "EXTRA_SONG_NAME";
@@ -94,7 +95,6 @@ public class MusicService extends Service {
             case ACTION_SET_CLICKED_SONG:
                 int index = intent.getIntExtra(EXTRA_SONG_INDEX, 0);
                 assert musicFiles != null;
-
                 playSongByIndex(index);
                 break;
         }
@@ -111,6 +111,12 @@ public class MusicService extends Service {
     private void sendSongsListToActivity() {
         Intent brodcastIntent = new Intent(BROADCAST_GET_LIST_OF_SONGS);
         brodcastIntent.putStringArrayListExtra(EXTRA_SONGS_LIST, musicFiles);
+        sendBroadcast(brodcastIntent);
+    }
+
+    private void sendSongIndex(int index) {
+        Intent brodcastIntent = new Intent(BROADCAST_SEND_SONG_INDEX);
+        brodcastIntent.putExtra(EXTRA_SONG_INDEX, index);
         sendBroadcast(brodcastIntent);
     }
 
@@ -154,6 +160,7 @@ public class MusicService extends Service {
             mediaPlayer.setOnPreparedListener(mp -> {
                 mediaPlayer.start();
                 sendSongName(filePath); // Send song name after starting the song
+                sendSongIndex(currentIndex); // Send song index after starting the song
             });
             mediaPlayer.setOnCompletionListener(mp -> playNextMusic());
         } catch (IOException e) {

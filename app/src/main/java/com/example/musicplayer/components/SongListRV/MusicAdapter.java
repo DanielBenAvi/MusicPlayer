@@ -62,6 +62,14 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
         return songList.size();
     }
 
+    public void setSelectedIndex(int index) {
+        notifyItemChanged(selectedPosition);
+        // change the selected position
+        selectedPosition = index;
+        // notify the adapter that the selected position has changed
+        notifyItemChanged(selectedPosition);
+    }
+
     public static class MusicViewHolder extends RecyclerView.ViewHolder {
         TextView songTitle;
 

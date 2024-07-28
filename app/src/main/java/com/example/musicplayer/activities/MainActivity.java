@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
         IntentFilter intentFilter = new IntentFilter(MusicService.BROADCAST_SEND_SONG_NAME);
         intentFilter.addAction(MusicService.BROADCAST_SEND_SONG_NAME);
         intentFilter.addAction(MusicService.BROADCAST_GET_LIST_OF_SONGS);
+        intentFilter.addAction(MusicService.BROADCAST_SEND_SONG_INDEX);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED);
@@ -118,6 +119,10 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
                         songList.add(new SongListItem(MusicService.pathToSongName(song)));
                     }
                     musicAdapter.notifyDataSetChanged();
+                    break;
+                case MusicService.BROADCAST_SEND_SONG_INDEX:
+                    int index = intent.getIntExtra(MusicService.EXTRA_SONG_INDEX, 0);
+                    musicAdapter.setSelectedIndex(index);
                     break;
                 default:
                     break;
