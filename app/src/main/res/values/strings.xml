@@ -14,4 +14,8 @@
     <string name="play_pause">Play/Pause</string>
     <string name="next_song">Next Song</string>
     <string name="demo_music_name">Demo Music Name</string>
+    <string name="back">Back</string>
+    <string name="demo_artist_name">Demo Artist Name</string>
+    <string name="demo_album_name">Demo Album Name</string>
+    <string name="demo_duration">Demo Duration</string>
 </resources>

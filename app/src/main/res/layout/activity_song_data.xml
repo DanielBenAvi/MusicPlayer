@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.SongDataActivity">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/ASD_TV_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="@string/demo_music_name"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textSize="50sp" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/ASD_TV_artist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ASD_TV_title"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="@string/demo_artist_name"
+        android:textSize="36sp" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/ASD_TV_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:layout_below="@id/ASD_TV_artist"
+        android:text="@string/demo_duration"
+        android:textSize="24sp" />
+
+</RelativeLayout>

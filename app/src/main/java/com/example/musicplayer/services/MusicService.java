@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -31,18 +30,16 @@ public class MusicService extends Service {
     public static final String ACTION_PREVIOUS = "ACTION_PREVIOUS";
     public static final String ACTION_SET_CLICKED_SONG = "ACTION_SET_CLICKED_SONG";
 
-    // Broadcast actions (SERVICE -> ACTIVITY)
-    public static final String BROADCAST_SEND_SONG_NAME = "ACTION_SEND_SONG_NAME";
     public static final String BROADCAST_GET_LIST_OF_SONGS = "ACTION_GET_LIST_OF_SONGS";
     public static final String BROADCAST_SEND_SONG_INDEX = "BROADCAST_SEND_SONG_INDEX";
     public static final String BROADCAST_SEND_SONG_DATA = "BROADCAST_SEND_SONG_DATA";
+    public static final String BROADCAST_SEND_All_SONGS_DATA_LIST = "BROADCAST_SEND_All_SONGS_DATA_LIST";
 
 
-    // Extras (ACTIVITY -> SERVICE)
-    public static final String EXTRA_SONG_NAME = "EXTRA_SONG_NAME";
     public static final String EXTRA_SONGS_LIST = "EXTRA_SONGS_LIST";
     public static final String EXTRA_SONG_INDEX = "EXTRA_SONG_INDEX";
     public static final String EXTRA_SONG_DATA = "EXTRA_SONG_DATA";
+    public static final String EXTRA_ALL_SONGS_DATA_LIST = "EXTRA_ALL_SONGS_DATA_LIST";
 
     private MediaPlayer mediaPlayer;
     private MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
@@ -106,20 +103,15 @@ public class MusicService extends Service {
                 assert musicFiles != null;
                 playSongByIndex(index);
                 break;
+
+            default:
+                break;
         }
         return flags;
     }
 
     private void sendSongData(String songPath) {
-        mediaMetadataRetriever.setDataSource(songPath);
-        String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        int durationInSeconds = Integer.parseInt(duration) / 1000;
-        String artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-
-        SongListItem songListItem = new SongListItem()
-                .setSongName(pathToSongName(songPath))
-                .setSongDuration(durationInSeconds)
-                .setSongArtist(artist);
+        SongListItem songListItem = getSongData(songPath);
 
         String songListItemGson = new Gson().toJson(songListItem);
         Intent songListItemIntent = new Intent(BROADCAST_SEND_SONG_DATA);
@@ -132,6 +124,16 @@ public class MusicService extends Service {
         Intent brodcastIntent = new Intent(BROADCAST_GET_LIST_OF_SONGS);
         brodcastIntent.putStringArrayListExtra(EXTRA_SONGS_LIST, musicFiles);
         sendBroadcast(brodcastIntent);
+
+        ArrayList<SongListItem> songListItems = new ArrayList<>();
+        for (String songPath : musicFiles) {
+            songListItems.add(getSongData(songPath));
+        }
+
+        String songListItemsGson = new Gson().toJson(songListItems);
+        Intent songListItemsIntent = new Intent(BROADCAST_SEND_All_SONGS_DATA_LIST);
+        songListItemsIntent.putExtra(EXTRA_ALL_SONGS_DATA_LIST, songListItemsGson);
+        sendBroadcast(songListItemsIntent);
     }
 
     private void sendSongIndex(int index) {
@@ -140,14 +142,11 @@ public class MusicService extends Service {
         sendBroadcast(brodcastIntent);
     }
 
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
-
-
 
     private void initializeMediaPlayer() {
         if (isInitialized) {
@@ -223,5 +222,17 @@ public class MusicService extends Service {
     public static String pathToSongName(String path) {
         String[] parts = path.split("/");
         return parts[parts.length - 1].substring(0, parts[parts.length - 1].length() - 4);
+    }
+
+    public SongListItem getSongData(String songPath) {
+        mediaMetadataRetriever.setDataSource(songPath);
+        String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        int durationInSeconds = Integer.parseInt(duration) / 1000;
+        String artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+
+        return new SongListItem()
+                .setSongName(pathToSongName(songPath))
+                .setSongDuration(durationInSeconds)
+                .setSongArtist(artist);
     }
 }

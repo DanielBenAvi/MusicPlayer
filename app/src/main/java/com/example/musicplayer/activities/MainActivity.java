@@ -128,6 +128,12 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
                     SongListItem songListItem = new Gson().fromJson(songData, SongListItem.class);
                     main_MPC_music_player.setSongTitle(songListItem.getSongName());
 
+                case MusicService.BROADCAST_SEND_All_SONGS_DATA_LIST:
+//                    String allSongsData = intent.getStringExtra(MusicService.EXTRA_ALL_SONGS_DATA_LIST);
+//                    ArrayList songListItems = new Gson().fromJson(allSongsData, ArrayList.class);
+//                    songList.clear();
+//                    songList.addAll(songListItems);
+//                    musicAdapter.notifyDataSetChanged();
 
                     break;
                 default:
@@ -149,5 +155,17 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
         intent.setAction(MusicService.ACTION_SET_CLICKED_SONG);
         intent.putExtra(MusicService.EXTRA_SONG_INDEX, position);
         startService(intent);
+
+
+        Intent intent1 = new Intent(this, SongDataActivity.class);
+        Log.d(TAG, "onItemClick: " + songListItem.toString());
+        intent1.putExtra(SongDataActivity.EXTRA_TITLE, songListItem.getSongName());
+        intent1.putExtra(SongDataActivity.EXTRA_ARTIST, songListItem.getSongArtist());
+        intent1.putExtra(SongDataActivity.EXTRA_DURATION, songListItem.getSongDuration());
+        startActivity(intent1);
+
+
+
+
     }
 }
