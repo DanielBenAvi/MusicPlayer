@@ -18,6 +18,7 @@ import com.example.musicplayer.components.MusicPlayerComponent.MusicPlayerCompon
 import com.example.musicplayer.components.SongListRV.MusicAdapter;
 import com.example.musicplayer.components.SongListRV.OnItemClickListener;
 import com.example.musicplayer.components.SongListRV.Song;
+import com.example.musicplayer.permissions.PermissionManager;
 import com.example.musicplayer.services.MusicService;
 import com.example.musicplayer.R;
 import com.google.gson.Gson;
@@ -31,7 +32,6 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
     private static final String TAG = "DDD-MainActivity";
 
     private MusicPlayerComponent main_MPC_music_player;
-
     private RecyclerView main_RV_songs;
     private ArrayList<Song> songList;
     private MusicAdapter musicAdapter;
@@ -41,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        PermissionManager permissionManager = new PermissionManager(this);
 
         findViews();
         setupMusicComponent();
