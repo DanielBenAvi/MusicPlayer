@@ -1,7 +1,15 @@
 package com.example.musicplayer.services;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -11,7 +19,11 @@ import android.os.IBinder;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import com.example.musicplayer.R;
+import com.example.musicplayer.activities.MainActivity;
 import com.example.musicplayer.components.SongListRV.Song;
 import com.google.gson.Gson;
 
@@ -23,25 +35,32 @@ public class MusicService extends Service {
     public static final String TAG = "DDD-MusicServer";
 
     // Actions
-    public static final String ACTION_INIT_PLAYER = "ACTION_INIT_PLAYER";
+    public static final String ACTION_INIT_MEDIA_PLAYER = "ACTION_INIT_PLAYER";
     public static final String ACTION_PLAY = "ACTION_PLAY";
     public static final String ACTION_STOP = "ACTION_STOP";
     public static final String ACTION_NEXT = "ACTION_NEXT";
     public static final String ACTION_PREVIOUS = "ACTION_PREVIOUS";
     public static final String ACTION_SET_CLICKED_SONG = "ACTION_SET_CLICKED_SONG";
 
+    // Broadcasts
     public static final String BROADCAST_SEND_SONG_INDEX = "BROADCAST_SEND_SONG_INDEX";
     public static final String BROADCAST_SEND_SONG_DATA = "BROADCAST_SEND_SONG_DATA";
     public static final String BROADCAST_SEND_All_SONGS_DATA_LIST = "BROADCAST_SEND_All_SONGS_DATA_LIST";
 
-
-    public static final String EXTRA_SONGS_LIST = "EXTRA_SONGS_LIST";
+    // Extras
     public static final String EXTRA_SONG_INDEX = "EXTRA_SONG_INDEX";
     public static final String EXTRA_SONG_DATA = "EXTRA_SONG_DATA";
     public static final String EXTRA_ALL_SONGS_DATA_LIST = "EXTRA_ALL_SONGS_DATA_LIST";
 
+    // Notification
+    private static final String NOTIFICATION_ACTION = "NOTIFICATION_ACTION";
+    private static final int NOTIFICATION_ID = 1;
+    private static final String CHANNEL_ID = "CHANNEL_ID";
+    private static int lastShownNotificationId = -1;
+
     private MediaPlayer mediaPlayer;
-    private MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+    private final MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+    public NotificationCompat.Builder notificationBuilder;
     private ArrayList<String> musicFiles;
     private int currentIndex = 0;
     private boolean isInitialized = false;
@@ -51,12 +70,11 @@ public class MusicService extends Service {
         assert intent.getAction() != null;
 
         switch (intent.getAction()) {
-            case ACTION_INIT_PLAYER:
+            case ACTION_INIT_MEDIA_PLAYER:
                 initializeMediaPlayer();
                 break;
 
             case ACTION_PLAY:
-
                 if (isInitialized && !isPlaying) {
                     playMusic(musicFiles.get(currentIndex));
                     isPlaying = true;
@@ -106,6 +124,9 @@ public class MusicService extends Service {
             default:
                 break;
         }
+
+        notifyToUserForForegroundService();
+
         return flags;
     }
 
@@ -184,7 +205,7 @@ public class MusicService extends Service {
 
     private void playNextMusic() {
         currentIndex = (currentIndex + 1) % musicFiles.size();
-        playMusic(musicFiles.get(currentIndex));
+        playMusic(MusicService.pathToSongName(musicFiles.get(currentIndex)));
     }
 
     private ArrayList<String> getMusicFilesFromDirectory(File directory) {
@@ -230,4 +251,74 @@ public class MusicService extends Service {
                 .setSongDuration(durationInSeconds)
                 .setSongArtist(artist);
     }
+
+
+    // // // // // // // // // // // // // // // // Notification  // // // // // // // // // // // // // // //
+
+    private void notifyToUserForForegroundService() {
+        // On notification click
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        notificationIntent.setAction(NOTIFICATION_ACTION);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, NOTIFICATION_ID, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Intent nextButtonIntent = new Intent(this, MusicService.class);
+        nextButtonIntent.setAction(ACTION_NEXT);
+        PendingIntent nextButtonPendingIntent = PendingIntent.getService(this, 0, nextButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        notificationBuilder = getNotificationBuilder(this,
+                CHANNEL_ID,
+                NotificationManagerCompat.IMPORTANCE_LOW); //Low importance prevent visual appearance for this notification channel on top
+
+        notificationBuilder
+                .setContentIntent(pendingIntent) // Open activity
+                .setOngoing(true)
+                .setSmallIcon(R.drawable.play_arrow_24px)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round))
+                .setContentTitle("Music Player")
+                .setContentText(pathToSongName(musicFiles.get(currentIndex)))
+                .addAction(R.drawable.skip_next_24px, "Next", nextButtonPendingIntent);
+
+        Notification notification = notificationBuilder.build();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+        }
+
+        if (NOTIFICATION_ID != lastShownNotificationId) {
+            // Cancel previous notification
+            final NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+            notificationManager.cancel(lastShownNotificationId);
+        }
+        lastShownNotificationId = NOTIFICATION_ID;
+    }
+
+    public static NotificationCompat.Builder getNotificationBuilder(Context context, String channelId, int importance) {
+        NotificationCompat.Builder builder;
+        prepareChannel(context, channelId, importance);
+        builder = new NotificationCompat.Builder(context, channelId);
+        return builder;
+    }
+
+    private static void prepareChannel(Context context, String id, int importance) {
+        final String appName = context.getString(R.string.app_name);
+        String notifications_channel_description = "Cycling app location channel";
+        final NotificationManager nm = (NotificationManager) context.getSystemService(Service.NOTIFICATION_SERVICE);
+
+        if(nm != null) {
+            NotificationChannel nChannel = nm.getNotificationChannel(id);
+
+            if (nChannel == null) {
+                nChannel = new NotificationChannel(id, appName, importance);
+                nChannel.setDescription(notifications_channel_description);
+
+                // from another answer
+                nChannel.enableLights(true);
+                nChannel.setLightColor(Color.BLUE);
+
+                nm.createNotificationChannel(nChannel);
+            }
+        }
+    }
+
 }

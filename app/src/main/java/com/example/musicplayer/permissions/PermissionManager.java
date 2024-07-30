@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat;
 
 public class PermissionManager {
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public PermissionManager(Context context) {
         // ask for read storage permission
 
@@ -23,6 +24,11 @@ public class PermissionManager {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
             }
+        }
+
+        // ask for notification permission
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
         }
 
     }

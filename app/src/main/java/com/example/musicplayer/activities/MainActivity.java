@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
 
     private void setupMusicService() {
         Intent intent = new Intent(this, MusicService.class);
-        intent.setAction(MusicService.ACTION_INIT_PLAYER);
+        intent.setAction(MusicService.ACTION_INIT_MEDIA_PLAYER);
         startService(intent);
 
         IntentFilter intentFilter = new IntentFilter();
