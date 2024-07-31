@@ -21,6 +21,8 @@ import com.example.musicplayer.components.SongListRV.Song;
 import com.example.musicplayer.permissions.PermissionManager;
 import com.example.musicplayer.services.MusicService;
 import com.example.musicplayer.R;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textview.MaterialTextView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -31,10 +33,15 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
 
     private static final String TAG = "DDD-MainActivity";
 
+    // Views
     private MusicPlayerComponent main_MPC_music_player;
+    private MaterialTextView main_TV_empty;
     private RecyclerView main_RV_songs;
+
+    // Data
     private ArrayList<Song> songList;
     private MusicAdapter musicAdapter;
+    private PermissionManager permissionManager;
 
 
     @Override
@@ -42,18 +49,30 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        PermissionManager permissionManager = new PermissionManager(this);
+
+        permissionManager = new PermissionManager(this);
+        permissionManager.requestReadExternalStoragePermission(this);
+        permissionManager.requestNotificationPermission(this);
 
         findViews();
-        setupMusicComponent();
+
+        main_TV_empty.setOnClickListener(v -> {
+            Toast.makeText(this, "Select a folder to load songs", Toast.LENGTH_SHORT).show();
+        });
+
         setupMusicService();
+
+        setupMusicComponent();
+
         setupRecyclerView();
     }
+
 
 
     private void findViews() {
         main_MPC_music_player = findViewById(R.id.main_MPC_music_player);
         main_RV_songs = findViewById(R.id.main_RV_songs);
+        main_TV_empty = findViewById(R.id.main_TV_empty);
     }
 
 
@@ -71,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
             registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED);
         } else {
             // TODO: fix this
-            Toast.makeText(this, "SDK version is too low", Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -119,7 +137,6 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
             assert action != null;
 
             switch (action) {
-
                 case MusicService.BROADCAST_SEND_SONG_INDEX:
                     int index = intent.getIntExtra(MusicService.EXTRA_SONG_INDEX, 0);
                     musicAdapter.setSelectedIndex(index);
@@ -134,6 +151,14 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
                     String allSongsData = intent.getStringExtra(MusicService.EXTRA_ALL_SONGS_DATA_LIST);
                     Type listType = new TypeToken<ArrayList<Song>>() {}.getType();
                     ArrayList<Song> songs = new Gson().fromJson(allSongsData, listType);
+
+                    assert songs != null;
+                    if(songs.isEmpty()){
+                        main_TV_empty.setVisibility(MaterialTextView.VISIBLE);
+                        main_RV_songs.setVisibility(RecyclerView.GONE);
+                        break;
+                    }
+
                     Log.d(TAG, "onReceive: " + songs);
                     songList.clear();
                     songList.addAll(songs);
@@ -166,9 +191,5 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
         intent1.putExtra(SongDataActivity.EXTRA_ARTIST, songListItem.getSongArtist());
         intent1.putExtra(SongDataActivity.EXTRA_DURATION, songListItem.getSongDuration());
         startActivity(intent1);
-
-
-
-
     }
 }

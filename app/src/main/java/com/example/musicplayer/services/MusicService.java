@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -47,10 +48,12 @@ public class MusicService extends Service {
     public static final String BROADCAST_SEND_SONG_DATA = "BROADCAST_SEND_SONG_DATA";
     public static final String BROADCAST_SEND_All_SONGS_DATA_LIST = "BROADCAST_SEND_All_SONGS_DATA_LIST";
 
+
     // Extras
     public static final String EXTRA_SONG_INDEX = "EXTRA_SONG_INDEX";
     public static final String EXTRA_SONG_DATA = "EXTRA_SONG_DATA";
     public static final String EXTRA_ALL_SONGS_DATA_LIST = "EXTRA_ALL_SONGS_DATA_LIST";
+    public static final String EXTRA_MEDIA_PATH = "EXTRA_MEDIA_PATH";
 
     // Notification
     private static final String NOTIFICATION_ACTION = "NOTIFICATION_ACTION";
@@ -63,6 +66,8 @@ public class MusicService extends Service {
     public NotificationCompat.Builder notificationBuilder;
     private ArrayList<String> musicFiles;
     private int currentIndex = 0;
+
+    // Flags
     private boolean isInitialized = false;
     private boolean isPlaying = false;
 
@@ -71,30 +76,44 @@ public class MusicService extends Service {
 
         switch (intent.getAction()) {
             case ACTION_INIT_MEDIA_PLAYER:
-                initializeMediaPlayer();
+                String mediaPath = intent.getStringExtra(EXTRA_MEDIA_PATH);
+
+                initializeMediaPlayer(mediaPath);
                 break;
 
             case ACTION_PLAY:
-                if (isInitialized && !isPlaying) {
-                    playMusic(musicFiles.get(currentIndex));
-                    isPlaying = true;
+                if (!isInitialized) {
+                    Toast.makeText(this, "Please wait for the music player to initialize", Toast.LENGTH_SHORT).show();
                     break;
                 }
 
-                assert mediaPlayer != null;
+                if (mediaPlayer == null) {
+                    Toast.makeText(this, "Media player is NULL", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+
+                if (musicFiles.isEmpty()) {
+                    Toast.makeText(this, "No music files found", Toast.LENGTH_SHORT).show();
+                    break;
+                }
 
                 if (isPlaying) {
                     mediaPlayer.pause();
                     isPlaying = false;
-                    break;
+                } else {
+                    playMusic(musicFiles.get(currentIndex));
+                    isPlaying = true;
                 }
 
-                mediaPlayer.start();
-                isPlaying = true;
                 break;
 
             case ACTION_STOP:
+                if (isPlaying) {
+                    break;
+                }
+
                 if (mediaPlayer == null) {
+                    Toast.makeText(this, "Media player is NULL", Toast.LENGTH_SHORT).show();
                     break;
                 }
 
@@ -104,10 +123,22 @@ public class MusicService extends Service {
                 break;
 
             case ACTION_NEXT:
+
+                if (musicFiles.isEmpty()) {
+                    Toast.makeText(this, "No music files found", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+
                 playNextMusic();
                 break;
 
             case ACTION_PREVIOUS:
+
+                if (musicFiles.isEmpty()) {
+                    Toast.makeText(this, "No music files found", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+
                 if (currentIndex == 0) {
                     currentIndex = musicFiles.size() - 1;
                 }
@@ -116,6 +147,11 @@ public class MusicService extends Service {
                 break;
 
             case ACTION_SET_CLICKED_SONG:
+                if (!isInitialized) {
+                    Toast.makeText(this, "Please wait for the music player to initialize", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+
                 int index = intent.getIntExtra(EXTRA_SONG_INDEX, 0);
                 assert musicFiles != null;
                 playSongByIndex(index);
@@ -130,9 +166,10 @@ public class MusicService extends Service {
         return flags;
     }
 
-    private void sendSongData(String songPath) {
-        Song songListItem = getSongData(songPath);
 
+
+    private void sendSongDataToActivity(String songPath) {
+        Song songListItem = getSongData(songPath);
         String songListItemGson = new Gson().toJson(songListItem);
         Intent songListItemIntent = new Intent(BROADCAST_SEND_SONG_DATA);
         songListItemIntent.putExtra(EXTRA_SONG_DATA, songListItemGson);
@@ -164,23 +201,19 @@ public class MusicService extends Service {
         return null;
     }
 
-    private void initializeMediaPlayer() {
+    private void initializeMediaPlayer(String mediaPath) {
         if (isInitialized) {
             return;
         }
 
-        isInitialized = true;
 
         File musicDir = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 ? Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
-                : new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
+                : new File(mediaPath);
 
         musicFiles = getMusicFilesFromDirectory(musicDir);
 
-        if (musicFiles.isEmpty()) {
-            Toast.makeText(this, "No music files found", Toast.LENGTH_SHORT).show();
-        }
-
+        isInitialized = true;
         sendSongsListToActivity();
     }
 
@@ -188,24 +221,29 @@ public class MusicService extends Service {
         if (mediaPlayer != null) {
             mediaPlayer.release();
         }
+
+
         mediaPlayer = new MediaPlayer();
+
         try {
             mediaPlayer.setDataSource(this, Uri.parse(filePath));
             mediaPlayer.prepare();
             mediaPlayer.setOnPreparedListener(mp -> {
                 mediaPlayer.start();
-                sendSongData(filePath); // Send song name after starting the song
+                sendSongDataToActivity(filePath); // Send song name after starting the song
                 sendSongIndex(currentIndex); // Send song index after starting the song
             });
+
             mediaPlayer.setOnCompletionListener(mp -> playNextMusic());
         } catch (IOException e) {
-            Toast.makeText(this, "Error playing file: " + filePath, Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            Toast.makeText(this, "Error playing music", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void playNextMusic() {
         currentIndex = (currentIndex + 1) % musicFiles.size();
-        playMusic(MusicService.pathToSongName(musicFiles.get(currentIndex)));
+        playMusic(musicFiles.get(currentIndex));
     }
 
     private ArrayList<String> getMusicFilesFromDirectory(File directory) {
@@ -256,6 +294,10 @@ public class MusicService extends Service {
     // // // // // // // // // // // // // // // // Notification  // // // // // // // // // // // // // // //
 
     private void notifyToUserForForegroundService() {
+
+
+
+
         // On notification click
         Intent notificationIntent = new Intent(this, MainActivity.class);
         notificationIntent.setAction(NOTIFICATION_ACTION);
@@ -270,6 +312,13 @@ public class MusicService extends Service {
                 CHANNEL_ID,
                 NotificationManagerCompat.IMPORTANCE_LOW); //Low importance prevent visual appearance for this notification channel on top
 
+
+        assert musicFiles != null;
+
+        if (musicFiles.isEmpty()) {
+            return;
+        }
+
         notificationBuilder
                 .setContentIntent(pendingIntent) // Open activity
                 .setOngoing(true)
@@ -277,6 +326,8 @@ public class MusicService extends Service {
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round))
                 .setContentTitle("Music Player")
                 .setContentText(pathToSongName(musicFiles.get(currentIndex)))
+                .addAction(R.drawable.skip_previous_24px, "Previous", PendingIntent.getService(this, 0, new Intent(this, MusicService.class).setAction(ACTION_PREVIOUS), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE))
+                .addAction(isPlaying ? R.drawable.pause_24px : R.drawable.play_arrow_24px, isPlaying ? "Pause" : "Play", PendingIntent.getService(this, 0, new Intent(this, MusicService.class).setAction(ACTION_PLAY), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE))
                 .addAction(R.drawable.skip_next_24px, "Next", nextButtonPendingIntent);
 
         Notification notification = notificationBuilder.build();

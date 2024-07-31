@@ -14,8 +14,18 @@
         android:layout_above="@id/main_MPC_music_player"
         android:layout_alignParentTop="true"
         tools:listitem="@layout/song_list_item"
+        android:visibility="visible"
         android:layout_margin="16dp"
         />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No songs found"
+        android:textSize="24sp"
+        android:id="@+id/main_TV_empty"
+        android:layout_centerInParent="true"
+        android:visibility="gone"/>
 
 
     <com.example.musicplayer.components.MusicPlayerComponent.MusicPlayerComponent
