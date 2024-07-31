@@ -21,7 +21,6 @@ import com.example.musicplayer.components.SongListRV.Song;
 import com.example.musicplayer.permissions.PermissionManager;
 import com.example.musicplayer.services.MusicService;
 import com.example.musicplayer.R;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -55,10 +54,6 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
         permissionManager.requestNotificationPermission(this);
 
         findViews();
-
-        main_TV_empty.setOnClickListener(v -> {
-            Toast.makeText(this, "Select a folder to load songs", Toast.LENGTH_SHORT).show();
-        });
 
         setupMusicService();
 
@@ -103,6 +98,9 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
 
     @Override
     public void onPlayPauseClicked() {
+        main_TV_empty.setVisibility(MaterialTextView.GONE);
+        main_RV_songs.setVisibility(RecyclerView.VISIBLE);
+
         Intent intent = new Intent(this, MusicService.class);
         intent.setAction(MusicService.ACTION_PLAY);
         startService(intent);
@@ -110,6 +108,9 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
 
     @Override
     public void onNextClicked() {
+        main_TV_empty.setVisibility(MaterialTextView.GONE);
+        main_RV_songs.setVisibility(RecyclerView.VISIBLE);
+
         Intent intent = new Intent(this, MusicService.class);
         intent.setAction(MusicService.ACTION_NEXT);
         startService(intent);
@@ -117,6 +118,10 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
 
     @Override
     public void onPreviousClicked() {
+        main_TV_empty.setVisibility(MaterialTextView.GONE);
+        main_RV_songs.setVisibility(RecyclerView.VISIBLE);
+
+
         Intent intent = new Intent(this, MusicService.class);
         intent.setAction(MusicService.ACTION_PREVIOUS);
         startService(intent);
@@ -152,7 +157,13 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
                     Type listType = new TypeToken<ArrayList<Song>>() {}.getType();
                     ArrayList<Song> songs = new Gson().fromJson(allSongsData, listType);
 
-                    assert songs != null;
+                    if (songs == null) {
+                        Log.d(TAG, "onReceive: songs is null");
+                        break;
+                    }
+
+
+
                     if(songs.isEmpty()){
                         main_TV_empty.setVisibility(MaterialTextView.VISIBLE);
                         main_RV_songs.setVisibility(RecyclerView.GONE);
@@ -162,7 +173,10 @@ public class MainActivity extends AppCompatActivity implements MusicPlayerCompon
                     Log.d(TAG, "onReceive: " + songs);
                     songList.clear();
                     songList.addAll(songs);
-                    musicAdapter.notifyDataSetChanged();
+                    musicAdapter.notifyItemRangeChanged(0, songList.size());
+
+                    main_TV_empty.setVisibility(MaterialTextView.GONE);
+                    main_RV_songs.setVisibility(RecyclerView.VISIBLE);
                     break;
                 default:
                     break;

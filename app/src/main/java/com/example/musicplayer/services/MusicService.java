@@ -1,5 +1,6 @@
 package com.example.musicplayer.services;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -7,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -20,6 +22,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -48,12 +51,10 @@ public class MusicService extends Service {
     public static final String BROADCAST_SEND_SONG_DATA = "BROADCAST_SEND_SONG_DATA";
     public static final String BROADCAST_SEND_All_SONGS_DATA_LIST = "BROADCAST_SEND_All_SONGS_DATA_LIST";
 
-
     // Extras
     public static final String EXTRA_SONG_INDEX = "EXTRA_SONG_INDEX";
     public static final String EXTRA_SONG_DATA = "EXTRA_SONG_DATA";
     public static final String EXTRA_ALL_SONGS_DATA_LIST = "EXTRA_ALL_SONGS_DATA_LIST";
-    public static final String EXTRA_MEDIA_PATH = "EXTRA_MEDIA_PATH";
 
     // Notification
     private static final String NOTIFICATION_ACTION = "NOTIFICATION_ACTION";
@@ -76,25 +77,26 @@ public class MusicService extends Service {
 
         switch (intent.getAction()) {
             case ACTION_INIT_MEDIA_PLAYER:
-                String mediaPath = intent.getStringExtra(EXTRA_MEDIA_PATH);
-
-                initializeMediaPlayer(mediaPath);
+                initializeMediaPlayer();
                 break;
 
             case ACTION_PLAY:
                 if (!isInitialized) {
-                    Toast.makeText(this, "Please wait for the music player to initialize", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Please wait for the music player to initialize");
                     break;
                 }
 
                 if (mediaPlayer == null) {
-                    Toast.makeText(this, "Media player is NULL", Toast.LENGTH_SHORT).show();
-                    break;
+                    Log.d(TAG, "Media player is null");
+                    initializeMediaPlayer();
+                    sendSongsListToActivity();
                 }
 
+
                 if (musicFiles.isEmpty()) {
-                    Toast.makeText(this, "No music files found", Toast.LENGTH_SHORT).show();
-                    break;
+                    Log.d(TAG, "No music files found");
+                    getMusicFilesFromDirectory(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC));
+                    sendSongsListToActivity();
                 }
 
                 if (isPlaying) {
@@ -103,6 +105,7 @@ public class MusicService extends Service {
                 } else {
                     playMusic(musicFiles.get(currentIndex));
                     isPlaying = true;
+//                    updateNotification(pathToSongName(musicFiles.get(currentIndex)));
                 }
 
                 break;
@@ -113,7 +116,7 @@ public class MusicService extends Service {
                 }
 
                 if (mediaPlayer == null) {
-                    Toast.makeText(this, "Media player is NULL", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Media player is null");
                     break;
                 }
 
@@ -123,20 +126,33 @@ public class MusicService extends Service {
                 break;
 
             case ACTION_NEXT:
+                if (mediaPlayer == null) {
+                    Log.d(TAG, "Media player is null");
+                    initializeMediaPlayer();
+                    sendSongsListToActivity();
+                }
+
 
                 if (musicFiles.isEmpty()) {
-                    Toast.makeText(this, "No music files found", Toast.LENGTH_SHORT).show();
-                    break;
+                    Log.d(TAG, "No music files found");
+                    getMusicFilesFromDirectory(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC));
+                    sendSongsListToActivity();
                 }
 
                 playNextMusic();
                 break;
 
             case ACTION_PREVIOUS:
+                if (mediaPlayer == null) {
+                    Log.d(TAG, "Media player is null");
+                    initializeMediaPlayer();
+                    sendSongsListToActivity();
+                }
 
                 if (musicFiles.isEmpty()) {
-                    Toast.makeText(this, "No music files found", Toast.LENGTH_SHORT).show();
-                    break;
+                    Log.d(TAG, "No music files found");
+                    getMusicFilesFromDirectory(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC));
+                    sendSongsListToActivity();
                 }
 
                 if (currentIndex == 0) {
@@ -167,7 +183,6 @@ public class MusicService extends Service {
     }
 
 
-
     private void sendSongDataToActivity(String songPath) {
         Song songListItem = getSongData(songPath);
         String songListItemGson = new Gson().toJson(songListItem);
@@ -178,10 +193,13 @@ public class MusicService extends Service {
 
 
     private void sendSongsListToActivity() {
+        Log.d(TAG, "Sending songs list to activity");
         ArrayList<Song> songListItems = new ArrayList<>();
         for (String songPath : musicFiles) {
             songListItems.add(getSongData(songPath));
         }
+
+        Log.d(TAG, "Songs list: " + songListItems);
 
         String songListItemsGson = new Gson().toJson(songListItems);
         Intent songListItemsIntent = new Intent(BROADCAST_SEND_All_SONGS_DATA_LIST);
@@ -201,15 +219,21 @@ public class MusicService extends Service {
         return null;
     }
 
-    private void initializeMediaPlayer(String mediaPath) {
+    private void initializeMediaPlayer() {
+        Log.d(TAG, "Initializing media player");
         if (isInitialized) {
+            Log.d(TAG, "Media player is already initialized");
             return;
         }
 
+        if (mediaPlayer != null) {
+            Log.d(TAG, "Media player is not null");
+            mediaPlayer.release();
+        }
 
         File musicDir = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 ? Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
-                : new File(mediaPath);
+                : new File(Environment.getExternalStorageDirectory() + "/Music");
 
         musicFiles = getMusicFilesFromDirectory(musicDir);
 
@@ -236,8 +260,7 @@ public class MusicService extends Service {
 
             mediaPlayer.setOnCompletionListener(mp -> playNextMusic());
         } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error playing music", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Error playing music: " + e.getMessage());
         }
     }
 
@@ -247,6 +270,7 @@ public class MusicService extends Service {
     }
 
     private ArrayList<String> getMusicFilesFromDirectory(File directory) {
+        Log.d(TAG, "Getting music files from directory: " + directory.getAbsolutePath());
         ArrayList<String> fileList = new ArrayList<>();
         File[] files = directory.listFiles();
         if (files != null) {
@@ -256,6 +280,8 @@ public class MusicService extends Service {
                 }
             }
         }
+        musicFiles = fileList;
+        Log.d(TAG, "Found " + fileList.size() + " music files");
         return fileList;
     }
 
@@ -294,7 +320,11 @@ public class MusicService extends Service {
     // // // // // // // // // // // // // // // // Notification  // // // // // // // // // // // // // // //
 
     private void notifyToUserForForegroundService() {
-
+        // Check if the notification permission is granted
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Notification permission is not granted");
+            return;
+        }
 
 
 
@@ -313,7 +343,10 @@ public class MusicService extends Service {
                 NotificationManagerCompat.IMPORTANCE_LOW); //Low importance prevent visual appearance for this notification channel on top
 
 
-        assert musicFiles != null;
+        if (mediaPlayer == null) {
+            initializeMediaPlayer();
+            return;
+        }
 
         if (musicFiles.isEmpty()) {
             return;
@@ -356,7 +389,7 @@ public class MusicService extends Service {
         String notifications_channel_description = "Cycling app location channel";
         final NotificationManager nm = (NotificationManager) context.getSystemService(Service.NOTIFICATION_SERVICE);
 
-        if(nm != null) {
+        if (nm != null) {
             NotificationChannel nChannel = nm.getNotificationChannel(id);
 
             if (nChannel == null) {
@@ -370,6 +403,12 @@ public class MusicService extends Service {
                 nm.createNotificationChannel(nChannel);
             }
         }
+    }
+
+    private void updateNotification(String content) {
+        notificationBuilder.setContentText(content);
+        final NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 
 }
