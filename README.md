@@ -10,10 +10,15 @@ An android Music Player application that allows users to play music from their d
 - Pause and resume music
 - Skip to next and previous songs
 - User can display data about the current song
+- User can Manage music in notification
 
 
 ## Demo Video
-https://github.com/user-attachments/assets/e59eda15-120e-4ea5-b371-e4bf47ae4223
+
+
+https://github.com/user-attachments/assets/5e8de662-b368-4f12-9351-0a4b9a992247
+
+
 
 ## Contributors
  - Daniel Ben-Avi 207005448
